@@ -1,0 +1,7 @@
+name=Playdate-Template
+author=Bobby Kazimiroff
+description=Template project for Playdate software
+bundleID=com.bobbykaz.template
+version=0.0.1
+buildNumber=1
+imagePath=launcher-assets/

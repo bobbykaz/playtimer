@@ -1,0 +1,144 @@
+{
+	// See https://go.microsoft.com/fwlink/?LinkId=733558
+	// for the documentation about the tasks.json format
+	"version": "2.0.0",
+	"tasks": [
+        {
+            "label": "Clean",
+            "type": "shell",
+            "windows": {
+                "command": "Remove-Item",
+                "args": [
+                    "'${workspaceFolder}\\builds\\*'",
+                    "-Recurse",
+                    "-Force"
+                ]
+            },
+            "osx": {
+                "command": "rm",
+                "args": [
+                    "-Rf",
+                    "'${workspaceFolder}/builds/*'"
+                ]
+            },
+            "group": {
+                "kind": "none",
+                "isDefault": true
+            },
+            "presentation": {
+                "showReuseMessage": false,
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build",
+            "type": "shell",
+            "command": "${env:PLAYDATE_SDK_PATH}\\bin\\pdc.exe",
+            "args": [
+                "'${workspaceFolder}\\source'",
+                "'${workspaceFolder}\\builds\\${workspaceFolderBasename}.pdx'"
+            ],
+            "options": {
+                "cwd": "${env:PLAYDATE_SDK_PATH}"
+            },
+            "presentation": {
+                "showReuseMessage": false,
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build Release",
+            "type": "shell",
+            "command": "${env:PLAYDATE_SDK_PATH}\\bin\\pdc.exe",
+            "args": [
+                "-s",
+                "-v",
+                "'${workspaceFolder}\\source'",
+                "'${workspaceFolder}\\builds\\${workspaceFolderBasename}.pdx'"
+            ],
+            "options": {
+                "cwd": "${env:PLAYDATE_SDK_PATH}"
+            },
+            "presentation": {
+                "showReuseMessage": false,
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Package PDX",
+            "type": "shell",
+            "command": "C:\\Program Files\\7-Zip\\7z.exe",
+            "args": [
+                "a",
+                "-tZip",
+                "'${workspaceFolder}\\builds\\${workspaceFolderBasename}.pdx.zip'",
+                "'${workspaceFolder}\\builds\\${workspaceFolderBasename}.pdx'"
+            ],
+        },
+        {
+            "label": "Run (Simulator)",
+            "type": "shell",
+            "windows": {
+                "command": "${env:PLAYDATE_SDK_PATH}\\bin\\PlaydateSimulator.exe",
+                "args": [
+                    "'${workspaceFolder}\\builds\\${workspaceFolderBasename}.pdx'"
+                ]
+            },
+            "osx": {
+                "command": "open",
+                "args": [
+                    "'${workspaceFolder}/builds/${workspaceFolderBasename}.pdx'"
+                ]
+            },
+            "presentation": {
+                "showReuseMessage": false,
+                "reveal": "always",
+                "panel": "shared"
+            }
+        },
+        {
+            "label": "Build and Run (Simulator)",
+            "dependsOn": [
+                "Clean",
+                "Build",
+                "Run (Simulator)"
+            ],
+            "dependsOrder": "sequence",
+            "presentation": {
+                "showReuseMessage": false,
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build and Package Release",
+            "dependsOn": [
+                "Clean",
+                "Build Release",
+                "Package PDX"
+            ],
+            "dependsOrder": "sequence",
+            "presentation": {
+                "showReuseMessage": false,
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        }
+    ]
+  }
