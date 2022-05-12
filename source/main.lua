@@ -33,8 +33,7 @@ function playdate.update()
     InitMenu()
     firstRun = false
   end
-
-  DrawDemo()
+  currentScreen.UpdateScreen()
 end
 
 function playdate.leftButtonDown()    currentScreen.Left()      end
