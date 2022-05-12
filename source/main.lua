@@ -4,6 +4,7 @@ import 'CoreLibs/crank'
 import 'constants'
 import 'draw'
 import 'save'
+import 'stopwatch'
 import 'log'
 import 'system-menu'
 
@@ -13,6 +14,8 @@ playdate.display.setRefreshRate( 30 )
 gfx.setBackgroundColor( gfx.kColorWhite )
 
 local firstRun = true
+local currentScreen = StopwatchScreenBuilder()
+
 
 function loadSavedData()
   if SaveExists("example") then
@@ -34,12 +37,12 @@ function playdate.update()
   DrawDemo()
 end
 
-function playdate.leftButtonDown()    Log("pressed left")        end
-function playdate.rightButtonDown()   Log("pressed right")        end
-function playdate.upButtonDown()      Log("pressed up")          end
-function playdate.downButtonDown()    Log("pressed down")        end
-function playdate.AButtonDown()       Log("pressed a")               end
-function playdate.BButtonDown()       Log("pressed b")               end
+function playdate.leftButtonDown()    currentScreen.Left()      end
+function playdate.rightButtonDown()   currentScreen.Right()     end
+function playdate.upButtonDown()      currentScreen.Up()        end
+function playdate.downButtonDown()    currentScreen.Down()      end
+function playdate.AButtonDown()       currentScreen.AButton()   end
+function playdate.BButtonDown()       currentScreen.BButton()   end
 function playdate.cranked(change, acceleratedChange) 
   local ticks = playdate.getCrankTicks(6)
   if ticks == 1 then

@@ -8,12 +8,12 @@ local function HandleDarkMode(enabled)
     playdate.display.setInverted(enabled)
 end
 
-local function HandleOptions(choice)
-    Log("MenuItem Options choice:", choice)
+local function HandleTimer()
+    Log("Timer")
 end
 
-local function HandleMenuItem() 
-    Log("MenuItem Generic")
+local function HandleStopwatch() 
+    Log("Stopwatch")
 end
 
 function InitMenu()
@@ -22,18 +22,19 @@ function InitMenu()
         if item1 == nil then
             Log("error adding checkmark menu item", err1)
         end
-        
-        local item2,err2 = menu:addOptionsMenuItem("Option",{"Item 1","Item 2", "Item 3"}, "Item 1", HandleOptions)
+        --[[
+        local item2,err2 = menu:addMenuItem("Stopwatch", HandleMenuItem)
+
         if item2 == nil then
-            Log("error adding options menu item", err2)
+            Log("error adding generic menu item", err2)
         end
 
-        local item3,err3 = menu:addMenuItem("Custom", HandleMenuItem)
+        local item3,err3 = menu:addMenuItem("Timer", HandleMenuItem)
 
-        if item2 == nil then
+        if item3 == nil then
             Log("error adding generic menu item", err3)
         end
-
+        ]]
         initialized = true 
     end
 end
