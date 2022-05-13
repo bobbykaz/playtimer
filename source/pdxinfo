@@ -1,7 +1,7 @@
-name=Playdate-Template
+name=PlayTime
 author=Bobby Kazimiroff
-description=Template project for Playdate software
-bundleID=com.bobbykaz.template
-version=0.0.1
-buildNumber=1
+description=Stopwatch and Timer for Playdate
+bundleID=com.bobbykaz.playtime
+version=0.5.0
+buildNumber=50
 imagePath=launcher-assets/
