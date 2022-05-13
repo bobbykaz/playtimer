@@ -15,7 +15,9 @@ playdate.display.setRefreshRate( 30 )
 gfx.setBackgroundColor( gfx.kColorWhite )
 
 local firstRun = true
-local currentScreen = TimerScreenBuilder()
+local stopWatchScreen = StopwatchScreenBuilder()
+local timerScreen = TimerScreenBuilder()
+local currentScreen = stopWatchScreen
 
 function loadSavedData()
   if SaveExists("example") then
@@ -27,10 +29,18 @@ function loadSavedData()
   end
 end
 
+function ShowStopwatch()
+  currentScreen = stopWatchScreen
+end
+
+function ShowTimer()
+  currentScreen = timerScreen
+end
+
 function playdate.update()
   if firstRun then
     loadSavedData()
-    InitMenu()
+    InitMenu(ShowStopwatch,ShowTimer)
     firstRun = false
   end
   currentScreen.UpdateScreen()
@@ -43,12 +53,7 @@ function playdate.downButtonDown()    currentScreen.Down()      end
 function playdate.AButtonDown()       currentScreen.AButton()   end
 function playdate.BButtonDown()       currentScreen.BButton()   end
 function playdate.cranked(change, acceleratedChange) 
-  local ticks = playdate.getCrankTicks(6)
-  if ticks == 1 then
-    Log("crank ticked forward")
-  elseif ticks == -1 then
-    Log("crank ticked backward")
-  end
+  currentScreen.Crank(change,acceleratedChange)
 end
 
 function HandleSavingState(mode)
