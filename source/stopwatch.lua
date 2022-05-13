@@ -1,5 +1,6 @@
 
 import 'CoreLibs/graphics'
+import 'common'
 import 'constants'
 
 local gfx = playdate.graphics
@@ -50,40 +51,6 @@ local function Lap()
     end
 end
 
-local function GetTimeString(durationMs)
-    local t = math.floor(durationMs)
-    local ms = t % 1000
-    local seconds = (t // 1000) % 60
-    local minutes = (t // 60000) % 60
-    local hours = (t // 3600000) % 60
-    
-    local timeString = ""
-    if hours > 0 then
-        timeString = "0"..hours..":"
-    end
-
-    if minutes < 10 then
-        timeString = timeString.."0"..minutes
-    else 
-        timeString = timeString..""..minutes
-    end
-
-    if seconds < 10 then
-        timeString = timeString..":0"..seconds.."."
-    else 
-        timeString = timeString..":"..seconds.."."
-    end
-
-    if ms < 10 then
-        timeString = timeString.."00"..ms
-    elseif ms < 100 then
-        timeString = timeString.."0"..ms
-    else
-        timeString = timeString..ms
-    end
-    return timeString
-end
-
 local helpDrawX, helpDrawY = 60,205
 local function DrawHelp()
     if watchState == kState.running then
@@ -118,7 +85,7 @@ local mainDrawX,mainDrawY = 80,15
 local function Draw()
     --Log("Draw start: elapsed", elapsedMs, "delta", deltaMs)
     local totalMs = elapsedMs + deltaMs
-    local timeString = GetTimeString(totalMs)
+    local timeString = GetTimeString(GetTimeComponents(totalMs))
     --Log(timeString)
     gfx.setColor( gfx.kColorWhite )
     gfx.fillRect(0,0,400,240)
@@ -135,7 +102,7 @@ end
 local function Update()
     if newLap then
         local lapDelta = (newLapS - timeStartS) * 1000 + (newLapMs - timeStartMs) + tempLapMs
-        local lapTime = GetTimeString(lapDelta)
+        local lapTime = GetTimeString(GetTimeComponents(lapDelta))
         Log("lap",lapDelta,lapTime)
         table.insert(laps, lapTime)
         elapsedMs += lapDelta

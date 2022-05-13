@@ -2,11 +2,12 @@ import 'CoreLibs/graphics'
 import 'CoreLibs/sprites'
 import 'CoreLibs/crank'
 import 'constants'
-import 'draw'
 import 'save'
-import 'stopwatch'
-import 'log'
 import 'system-menu'
+import 'stopwatch'
+import 'timer'
+import 'log'
+
 
 local gfx = playdate.graphics
 playdate.display.setRefreshRate( 30 )
@@ -14,8 +15,7 @@ playdate.display.setRefreshRate( 30 )
 gfx.setBackgroundColor( gfx.kColorWhite )
 
 local firstRun = true
-local currentScreen = StopwatchScreenBuilder()
-
+local currentScreen = TimerScreenBuilder()
 
 function loadSavedData()
   if SaveExists("example") then
