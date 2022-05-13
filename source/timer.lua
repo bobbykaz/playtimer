@@ -31,6 +31,7 @@ local function BuildTimer()
 end
 local timers = {}
 local selectedTimer = 1
+local selectedEditState = kEditState.s
 local function Init()
     timers = {}
     selectedTimer = 1
@@ -51,22 +52,29 @@ local function InitSounds()
     local track = playdate.sound.track.new()
     beepInst = playdate.sound.instrument.new(beepSnd)
     beepInst:setVolume(1.0)
-    track:addNote(8, "B7", 1)
-    track:addNote(12, "B7", 1)
-    track:addNote(16, "B7", 1)
-    track:addNote(20, "B7", 1)
-    track:addNote(28, "B7", 1)
-    track:addNote(32, "B7", 1)
-    track:addNote(36, "B7", 1)
-    track:addNote(40, "B7", 1)
-    track:addNote(48, "B7", 1)
-    track:addNote(52, "B7", 1)
-    track:addNote(56, "B7", 1)
-    track:addNote(60, "B7", 1)
+    track:addNote(1, "B7", 1)
+    track:addNote(5, "B7", 1)
+    track:addNote(9, "B7", 1)
+    track:addNote(13, "B7", 1)
+
+    track:addNote(21, "B7", 1)
+    track:addNote(25, "B7", 1)
+    track:addNote(29, "B7", 1)
+    track:addNote(33, "B7", 1)
+    
+    track:addNote(41, "B7", 1)
+    track:addNote(45, "B7", 1)
+    track:addNote(49, "B7", 1)
+    track:addNote(53, "B7", 1)
+
+    track:addNote(61, "B7", 1)
+    track:addNote(65, "B7", 1)
+    track:addNote(69, "B7", 1)
+    track:addNote(73, "B7", 1)
     track:setInstrument(beepInst)
-    beepSeq:setTempo(15)
+    beepSeq:setTempo(20)
     beepSeq:addTrack(track)
-    beepSeq:setLoops(1, 20, 5)
+    --beepSeq:setLoops(1, 20, 5)
 end
 
 local function PlayStartBeep()
@@ -82,9 +90,12 @@ local function PlayFinishBeep()
 end
 
 local function StartTimer()
-    playdate.setAutoLockDisabled(true)
-    timers[selectedTimer].timeStartS,timers[selectedTimer].timeStartMs = playdate.getSecondsSinceEpoch()
-    timers[selectedTimer].state = kState.running
+    if(timers[selectedTimer].durationMs > 0) then 
+        playdate.setAutoLockDisabled(true)
+        timers[selectedTimer].timeStartS,timers[selectedTimer].timeStartMs = playdate.getSecondsSinceEpoch()
+        timers[selectedTimer].state = kState.running
+        PlayStartBeep()
+    end
 end
 
 local function AllTimersStopped()
@@ -98,26 +109,64 @@ local function StopTimer()
         playdate.setAutoLockDisabled(false)    
     end
     timers[selectedTimer].state = kState.stopped
+    PlayStopBeep()
 end
 
-local function IncrementTimer()
+local function EditTimer()
+    timers[selectedTimer].state = kState.editing
+end
+
+local function IncrementTimer(inc)
+    inc = inc or false
+    local amt = 1000
+    if not inc then amt = -1000 end
+
     if timers[selectedTimer].state == kState.editing then
-        
+        if selectedEditState == kEditState.h then
+            amt *= 3600
+        elseif selectedEditState == kEditState.m then
+            amt *= 60
+        end
+        timers[selectedTimer].durationMs += amt
+        if timers[selectedTimer].durationMs < 0 then
+            timers[selectedTimer].durationMs -= amt
+        end
     end
 end
 
 local helpDrawX, helpDrawY = 60,210
 local function DrawHelp()
-    if watchState == kState.running then
+    if timers[selectedTimer].state == kState.running then
         fntBasic:drawTextAligned("Ⓐ/Ⓑ STOP", helpDrawX, helpDrawY, kTextAlignment.left)
-    else 
+    elseif timers[selectedTimer].state == kState.stopped then
         fntBasic:drawTextAligned("Ⓑ EDIT", helpDrawX, helpDrawY, kTextAlignment.left)
         fntBasic:drawTextAligned("Ⓐ START", 400 - helpDrawX, helpDrawY, kTextAlignment.right)
+    elseif timers[selectedTimer].state == kState.editing then
+        fntBasic:drawTextAligned("Ⓑ SAVE", helpDrawX, helpDrawY, kTextAlignment.left)
     end
 end
 
 local mainDrawX,mainDrawY = 20,5
 local drawRowYOffset = 66
+local selectorOffsetX = 260
+local selectorYTable = {35, 101,167}
+local highLightTable = {
+    {
+        [kEditState.h] = playdate.geometry.rect.new( 19, 6, 66,62),
+        [kEditState.m] = playdate.geometry.rect.new( 95, 6, 66,62),
+        [kEditState.s] = playdate.geometry.rect.new(171, 6, 66,62)
+    },
+    {
+        [kEditState.h] = playdate.geometry.rect.new( 19, 72, 66,62),
+        [kEditState.m] = playdate.geometry.rect.new( 95, 72, 66,62),
+        [kEditState.s] = playdate.geometry.rect.new(171, 72, 66,62)
+    },
+    {
+        [kEditState.h] = playdate.geometry.rect.new( 19, 138, 66,62),
+        [kEditState.m] = playdate.geometry.rect.new( 95, 138, 66,62),
+        [kEditState.s] = playdate.geometry.rect.new(171, 138, 66,62)
+    }
+}
 local function Draw()
     --Log("Draw start: elapsed", elapsedMs, "delta", deltaMs)
     gfx.setColor( gfx.kColorWhite )
@@ -126,12 +175,20 @@ local function Draw()
     gfx.setColor( gfx.kColorBlack )
     for i=1,#timers,1
     do
-        local timeString = GetTimeString(GetTimeComponents(timers[i].durationMs))
-        --Log(timeString)
+        local timeString = GetTimeString(GetTimeComponents(timers[i].durationMs),true,true)
+        --Log(i,timeString)
+        --highlights
+        --19,6 -> 66x62
         --Main display
         fntClock:drawTextAligned(timeString, mainDrawX, mainDrawY + drawRowYOffset*(i-1), kTextAlignment.left)
+        if timers[i].state == kState.editing then
+            gfx.setColor( gfx.kColorXOR)
+            gfx.fillRect(highLightTable[i][selectedEditState])
+            gfx.setColor( gfx.kColorBlack )
+        end
     end
-    
+    --selector
+    gfx.fillCircleAtPoint(selectorOffsetX, selectorYTable[selectedTimer],5)
     -- help
     DrawHelp()
 end
@@ -161,23 +218,93 @@ local function HandleAButton()
         StopTimer()
     else
         Log("A button - starting")
-        PlayStartBeep()
         StartTimer()
     end
 end
 
 local function HandleBButton()
-    if timers[selectedTimer] ~= kState.stopped then
+    if timers[selectedTimer].state ~= kState.stopped then
         Log("B button - stopping")
-        PlayStopBeep()
         StopTimer()
+    elseif timers[selectedTimer].state == kState.stopped then
+        EditTimer()
     end
 end
 
-local function DoNothing()
+local function CycleEditState(right)
+    right = right or false
+    if selectedEditState == kEditState.s then
+        if(right) then 
+            selectedEditState = kEditState.h
+        else
+            selectedEditState = kEditState.m
+        end
+    elseif selectedEditState == kEditState.m then
+        if(right) then 
+            selectedEditState = kEditState.s
+        else
+            selectedEditState = kEditState.h
+        end
+    elseif selectedEditState == kEditState.h then
+        if(right) then 
+            selectedEditState = kEditState.m
+        else
+            selectedEditState = kEditState.s
+        end
+    end
 end
 
+local function CycleTimerSelection(down)
+    down = down or false
+    if down then
+        selectedTimer += 1
+    else
+        selectedTimer -= 1    
+    end
+    
+    if selectedTimer > 3 then
+        selectedTimer = 1
+    end
+
+    if selectedTimer < 1 then
+        selectedTimer = 3
+    end
+end
+
+local function HandleDpad(dir)
+    if timers[selectedTimer].state == kState.editing then
+        if dir == "U" then
+            IncrementTimer(true)
+        elseif dir == "D" then
+            IncrementTimer(false)
+        elseif dir == "L" then
+            CycleEditState(false)
+        elseif dir == "R" then
+            CycleEditState(true)
+        end
+    else
+        if dir == "U" then
+            CycleTimerSelection(false)
+        elseif dir == "D" then
+            CycleTimerSelection(true)
+        end
+    end
+end
+
+local function HandleUp()    HandleDpad("U") end
+local function HandleDown()  HandleDpad("D") end
+local function HandleLeft()  HandleDpad("L") end
+local function HandleRight() HandleDpad("R") end
+
 local function HandleCrank(change, accelChange)
+    if timers[selectedTimer].state == kState.editing then
+        local ticks = playdate.getCrankTicks(12)
+        if ticks == 1 then
+            IncrementTimer(true)
+        elseif ticks == -1 then
+            IncrementTimer(false)
+        end
+    end
 end
 
 function TimerScreenBuilder()
@@ -186,10 +313,10 @@ function TimerScreenBuilder()
     local screen = {
         AButton = HandleAButton,
         BButton = HandleBButton,
-        Down = DoNothing,
-        Up = DoNothing,
-        Left = DoNothing,
-        Right = DoNothing,
+        Down = HandleDown,
+        Up = HandleUp,
+        Left = HandleLeft,
+        Right = HandleRight,
         Crank = HandleCrank,
         UpdateScreen = Update
     }

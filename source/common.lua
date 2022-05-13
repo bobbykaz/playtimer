@@ -12,9 +12,9 @@ function GetTimeComponents(durationMs)
     }
 end
 
-function GetTimeString(tComponents, includeHours, includeMs)
+function GetTimeString(tComponents, includeHours, skipMs)
     includeHours = includeHours or false
-    includeMs = includeMs or true
+    skipMs = skipMs or false
     
     local timeString = ""
     if tComponents.h > 0 or includeHours then
@@ -33,7 +33,7 @@ function GetTimeString(tComponents, includeHours, includeMs)
         timeString = timeString..":"..tComponents.s
     end
 
-    if includeMs then
+    if not skipMs then
         if tComponents.ms < 10 then
             timeString = timeString..".00"..tComponents.ms
         elseif tComponents.ms < 100 then
