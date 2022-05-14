@@ -33,6 +33,59 @@
             "problemMatcher": []
         },
         {
+            "label": "Uninstall (Simulator)",
+            "type": "shell",
+            "windows": {
+                "command": "Remove-Item",
+                "args": [
+                    "'${env:PLAYDATE_SDK_PATH}\\Disk\\Games\\${workspaceFolderBasename}.pdx'",
+                    "-Recurse",
+                    "-Force"
+                ]
+            },
+            "osx": {
+                "command": "rm",
+                "args": [
+                    "-Rf",
+                    "'${env:PLAYDATE_SDK_PATH}/Disk/Games/${workspaceFolderBasename}.pdx'"
+                ]
+            },
+            "group": {
+                "kind": "none",
+                "isDefault": true
+            },
+            "presentation": {
+                "showReuseMessage": false,
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Install (Simulator)",
+            "type": "shell",
+            "windows": {
+                "command": "Copy-Item",
+                "args": [
+                    "-Path",
+                    "'${workspaceFolder}\\builds\\${workspaceFolderBasename}.pdx'", 
+                    "-Destination",
+                    "'${env:PLAYDATE_SDK_PATH}\\Disk\\Games\\${workspaceFolderBasename}.pdx'",
+                    "-Recurse"
+                ]
+            },
+            "group": {
+                "kind": "none",
+                "isDefault": true
+            },
+            "presentation": {
+                "showReuseMessage": false,
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
             "label": "Build",
             "type": "shell",
             "command": "${env:PLAYDATE_SDK_PATH}\\bin\\pdc.exe",
@@ -112,6 +165,26 @@
                 "Clean",
                 "Build",
                 "Run (Simulator)"
+            ],
+            "dependsOrder": "sequence",
+            "presentation": {
+                "showReuseMessage": false,
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build and Install (Simulator)",
+            "dependsOn": [
+                "Clean",
+                "Build",
+                "Uninstall (Simulator)",
+                "Install (Simulator)"
             ],
             "dependsOrder": "sequence",
             "presentation": {
