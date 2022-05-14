@@ -1,4 +1,4 @@
-local enabled = true
+local enabled = false
 --disable logging in this source file for release builds
 function Log(...)
     if enabled then

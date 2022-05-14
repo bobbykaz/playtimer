@@ -3,5 +3,5 @@ author=Bobby Kazimiroff
 description=Stopwatch and Timer for Playdate
 bundleID=com.bobbykaz.playtimer
 version=1.0.1
-buildNumber=128
+buildNumber=140
 imagePath=launcher-assets/

@@ -3,7 +3,7 @@ function GetTimeComponents(durationMs)
     local ms = t % 1000
     local seconds = (t // 1000) % 60
     local minutes = (t // 60000) % 60
-    local hours = (t // 3600000) % 60
+    local hours = (t // 3600000)
     return {
         h = hours,
         m = minutes,
@@ -18,7 +18,11 @@ function GetTimeString(tComponents, includeHours, skipMs)
     
     local timeString = ""
     if tComponents.h > 0 or includeHours then
-        timeString = "0"..tComponents.h..":"
+        if tComponents.h < 10 then
+            timeString = "0"..tComponents.h..":"
+        else
+            timeString = ""..tComponents.h..":"
+        end
     end
 
     if tComponents.m < 10 then

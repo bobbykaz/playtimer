@@ -131,6 +131,10 @@ local function IncrementTimer(inc)
         if timers[selectedTimer].durationMs < 0 then
             timers[selectedTimer].durationMs -= amt
         end
+
+        if timers[selectedTimer].durationMs > 359999000 then
+            timers[selectedTimer].durationMs -= amt
+        end
     end
 end
 
@@ -142,29 +146,30 @@ local function DrawHelp()
         fntBasic:drawTextAligned("Ⓑ EDIT", helpDrawX, helpDrawY, kTextAlignment.left)
         fntBasic:drawTextAligned("Ⓐ START", 400 - helpDrawX, helpDrawY, kTextAlignment.right)
     elseif timers[selectedTimer].state == kState.editing then
-        fntBasic:drawTextAligned("Ⓑ SAVE", helpDrawX, helpDrawY, kTextAlignment.left)
+        fntBasic:drawTextAligned("Ⓐ/Ⓑ SAVE", helpDrawX, helpDrawY, kTextAlignment.left)--
+        fntBasic:drawTextAligned("✛/🎣 ADJUST", 400 - helpDrawX, helpDrawY, kTextAlignment.right)
     end
 end
 
-local mainDrawX,mainDrawY = 20,5
+local mainDrawX,mainDrawY = 80,5
 local drawRowYOffset = 66
-local selectorOffsetX = 260
+local selectorOffsetX = 320
 local selectorYTable = {35, 101,167}
 local highLightTable = {
     {
-        [kEditState.h] = playdate.geometry.rect.new( 19, 6, 66,62),
-        [kEditState.m] = playdate.geometry.rect.new( 95, 6, 66,62),
-        [kEditState.s] = playdate.geometry.rect.new(171, 6, 66,62)
+        [kEditState.h] = playdate.geometry.rect.new( 79, 6, 66,62),
+        [kEditState.m] = playdate.geometry.rect.new(155, 6, 66,62),
+        [kEditState.s] = playdate.geometry.rect.new(231, 6, 66,62)
     },
     {
-        [kEditState.h] = playdate.geometry.rect.new( 19, 72, 66,62),
-        [kEditState.m] = playdate.geometry.rect.new( 95, 72, 66,62),
-        [kEditState.s] = playdate.geometry.rect.new(171, 72, 66,62)
+        [kEditState.h] = playdate.geometry.rect.new( 79, 72, 66,62),
+        [kEditState.m] = playdate.geometry.rect.new(155, 72, 66,62),
+        [kEditState.s] = playdate.geometry.rect.new(231, 72, 66,62)
     },
     {
-        [kEditState.h] = playdate.geometry.rect.new( 19, 138, 66,62),
-        [kEditState.m] = playdate.geometry.rect.new( 95, 138, 66,62),
-        [kEditState.s] = playdate.geometry.rect.new(171, 138, 66,62)
+        [kEditState.h] = playdate.geometry.rect.new( 79, 138, 66,62),
+        [kEditState.m] = playdate.geometry.rect.new(155, 138, 66,62),
+        [kEditState.s] = playdate.geometry.rect.new(231, 138, 66,62)
     }
 }
 local function Draw()
@@ -214,7 +219,7 @@ end
 
 local function HandleAButton()
     
-    if timers[selectedTimer].state == kState.running then
+    if timers[selectedTimer].state ~= kState.stopped then
         StopTimer()
     else
         Log("A button - starting")
