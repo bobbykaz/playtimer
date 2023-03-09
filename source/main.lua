@@ -2,7 +2,6 @@ import 'CoreLibs/graphics'
 import 'CoreLibs/sprites'
 import 'CoreLibs/crank'
 import 'constants'
-import 'save'
 import 'system-menu'
 import 'stopwatch'
 import 'timer'
@@ -15,51 +14,38 @@ playdate.display.setRefreshRate( 30 )
 gfx.setBackgroundColor( gfx.kColorWhite )
 
 local firstRun = true
-local stopWatchScreen = StopwatchScreenBuilder()
-local timerScreen = TimerScreenBuilder()
+local stopWatchScreen = Stopwatch()
+local timerScreen = Timer()
 local currentScreen = stopWatchScreen
 
-function loadSavedData()
-  if SaveExists("example") then
-    Log("Loading previously saved data",targetWord)
-    local tbl =  LoadData("example")
-    LogTable(tbl)
-  else
-    Log("no save present")
-  end
-end
-
 function ShowStopwatch()
+  currentScreen:HandleExit()
   currentScreen = stopWatchScreen
 end
 
 function ShowTimer()
+  currentScreen:HandleExit()
   currentScreen = timerScreen
 end
 
 function playdate.update()
   if firstRun then
-    loadSavedData()
     InitMenu(ShowStopwatch,ShowTimer)
     firstRun = false
   end
-  currentScreen.UpdateScreen()
+  currentScreen:Update()
 end
 
-function playdate.leftButtonDown()    currentScreen.Left()      end
-function playdate.rightButtonDown()   currentScreen.Right()     end
-function playdate.upButtonDown()      currentScreen.Up()        end
-function playdate.downButtonDown()    currentScreen.Down()      end
-function playdate.AButtonDown()       currentScreen.AButton()   end
-function playdate.BButtonDown()       currentScreen.BButton()   end
+function playdate.leftButtonDown()    currentScreen:HandleLeft()      end
+function playdate.rightButtonDown()   currentScreen:HandleRight()     end
+function playdate.upButtonDown()      currentScreen:HandleUp()        end
+function playdate.downButtonDown()    currentScreen:HandleDown()      end
+function playdate.AButtonDown()       currentScreen:HandleAButton()   end
+function playdate.BButtonDown()       currentScreen:HandleBButton()   end
 function playdate.cranked(change, acceleratedChange) 
-  currentScreen.Crank(change,acceleratedChange)
+  currentScreen:HandleCrank(change,acceleratedChange)
 end
 
-function HandleSavingState(mode)
-  SaveData(mode)
-end
-
-function playdate.gameWillTerminate() HandleSavingState("terminate") end
-function playdate.deviceWillSleep()   HandleSavingState("sleep") end
-function playdate.deviceWillLock()    HandleSavingState("lock") end
+function playdate.gameWillTerminate() currentScreen:HandleExit() end
+function playdate.deviceWillSleep()   currentScreen:HandleExit() end
+function playdate.deviceWillLock()    currentScreen:HandleExit() end

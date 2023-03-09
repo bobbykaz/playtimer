@@ -2,6 +2,7 @@
 import 'CoreLibs/graphics'
 import 'common'
 import 'constants'
+import 'base-screen'
 
 local gfx = playdate.graphics
 
@@ -32,49 +33,64 @@ end
 local timers = {}
 local selectedTimer = 1
 local selectedEditState = kEditState.s
+local stateInit = false
 local function Init()
-    timers = {}
-    selectedTimer = 1
-    local t1 = BuildTimer()
-    local t2 = BuildTimer()
-    local t3 = BuildTimer()
-    table.insert(timers,t1)
-    table.insert(timers,t2)
-    table.insert(timers,t3)
+    if not stateInit then
+        timers = {}
+        selectedTimer = 1
+        local t1 = BuildTimer()
+        local t2 = BuildTimer()
+        local t3 = BuildTimer()
+        table.insert(timers,t1)
+        table.insert(timers,t2)
+        table.insert(timers,t3)
+        stateInit = true;
+    end
 end
 
 local beepInst = nil
 local beepSeq = nil
+local soundInit = false
 local function InitSounds()
-    local beepSnd = playdate.sound.synth.new(playdate.sound.kWaveSawtooth)
-    beepSnd:setADSR(0,1,1,0)
-    beepSeq = playdate.sound.sequence.new()
-    local track = playdate.sound.track.new()
-    beepInst = playdate.sound.instrument.new(beepSnd)
-    beepInst:setVolume(1.0)
-    track:addNote(1, "B7", 1)
-    track:addNote(5, "B7", 1)
-    track:addNote(9, "B7", 1)
-    track:addNote(13, "B7", 1)
+    if not soundInit then    
+        local beepSnd = playdate.sound.synth.new(playdate.sound.kWaveSawtooth)
+        beepSnd:setADSR(0,1,1,0)
+        beepSeq = playdate.sound.sequence.new()
+        local track = playdate.sound.track.new()
+        track:addNote(1, "B7", 1)
+        track:addNote(5, "B7", 1)
+        track:addNote(9, "B7", 1)
+        track:addNote(13, "B7", 1)
 
-    track:addNote(21, "B7", 1)
-    track:addNote(25, "B7", 1)
-    track:addNote(29, "B7", 1)
-    track:addNote(33, "B7", 1)
-    
-    track:addNote(41, "B7", 1)
-    track:addNote(45, "B7", 1)
-    track:addNote(49, "B7", 1)
-    track:addNote(53, "B7", 1)
+        track:addNote(21, "B7", 1)
+        track:addNote(25, "B7", 1)
+        track:addNote(29, "B7", 1)
+        track:addNote(33, "B7", 1)
 
-    track:addNote(61, "B7", 1)
-    track:addNote(65, "B7", 1)
-    track:addNote(69, "B7", 1)
-    track:addNote(73, "B7", 1)
-    track:setInstrument(beepInst)
-    beepSeq:setTempo(20)
-    beepSeq:addTrack(track)
-    --beepSeq:setLoops(1, 20, 5)
+        track:addNote(41, "B7", 1)
+        track:addNote(45, "B7", 1)
+        track:addNote(49, "B7", 1)
+        track:addNote(53, "B7", 1)
+
+        track:addNote(61, "B7", 1)
+        track:addNote(65, "B7", 1)
+        track:addNote(69, "B7", 1)
+        track:addNote(73, "B7", 1)
+        track:setInstrument(beepSnd)
+        beepInst = track:getInstrument()
+        beepInst:setVolume(1.0)
+        beepSeq:setTempo(20)
+        beepSeq:addTrack(track)
+        --beepSeq:setLoops(1, 20, 5)
+        soundInit = true
+    end
+end
+
+class('Timer').extends('Screen')
+function Timer:init()
+    Timer.super.init(self)
+    Init()
+    InitSounds()
 end
 
 local function PlayStartBeep()
@@ -198,7 +214,7 @@ local function Draw()
     DrawHelp()
 end
 
-local function Update()
+function Timer:Update()
     for i=1,#timers,1
     do
         if timers[i].state == kState.running then
@@ -217,8 +233,7 @@ local function Update()
     Draw()
 end
 
-local function HandleAButton()
-    
+function Timer:HandleAButton()
     if timers[selectedTimer].state ~= kState.stopped then
         StopTimer()
     else
@@ -227,7 +242,7 @@ local function HandleAButton()
     end
 end
 
-local function HandleBButton()
+function Timer:HandleBButton()
     if timers[selectedTimer].state ~= kState.stopped then
         Log("B button - stopping")
         StopTimer()
@@ -296,12 +311,12 @@ local function HandleDpad(dir)
     end
 end
 
-local function HandleUp()    HandleDpad("U") end
-local function HandleDown()  HandleDpad("D") end
-local function HandleLeft()  HandleDpad("L") end
-local function HandleRight() HandleDpad("R") end
+function Timer:HandleUp()    HandleDpad("U") end
+function Timer:HandleDown()  HandleDpad("D") end
+function Timer:HandleLeft()  HandleDpad("L") end
+function Timer:HandleRight() HandleDpad("R") end
 
-local function HandleCrank(change, accelChange)
+function Timer:HandleCrank(change, accelChange)
     if timers[selectedTimer].state == kState.editing then
         local ticks = playdate.getCrankTicks(12)
         if ticks == 1 then
@@ -310,21 +325,4 @@ local function HandleCrank(change, accelChange)
             IncrementTimer(false)
         end
     end
-end
-
-function TimerScreenBuilder()
-    Init()
-    InitSounds()
-    local screen = {
-        AButton = HandleAButton,
-        BButton = HandleBButton,
-        Down = HandleDown,
-        Up = HandleUp,
-        Left = HandleLeft,
-        Right = HandleRight,
-        Crank = HandleCrank,
-        UpdateScreen = Update
-    }
-
-    return screen
 end

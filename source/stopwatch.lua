@@ -2,6 +2,7 @@
 import 'CoreLibs/graphics'
 import 'common'
 import 'constants'
+import 'base-screen'
 
 local gfx = playdate.graphics
 
@@ -22,6 +23,35 @@ local newLap = false
 local tempLapMs = 0
 local newLapS,newLapMs = 0,0
 local stopS,stopMs = 0,0
+
+local beepInst = nil
+local beepSeq = nil
+local soundInit = false
+local function InitSounds()
+    if not soundInit then
+        local beepSnd = playdate.sound.synth.new(playdate.sound.kWaveSawtooth)
+        local rstSnd = playdate.sound.synth.new(playdate.sound.kWaveSawtooth)
+        beepSnd:setADSR(0,1,1,0)
+        rstSnd:setADSR(0,1,1,0)
+        beepSeq = playdate.sound.sequence.new()
+        local track = playdate.sound.track.new()
+        track:addNote(1, "B7", 1)
+        track:addNote(2, "F7", 1)
+        track:setInstrument(beepSnd)
+        beepInst = track:getInstrument()
+        beepInst:setVolume(1.0)
+        beepSeq:setTempo(10)
+        beepSeq:addTrack(track)
+        --beepSeq:setLoops(1, 2, 1)
+        soundInit = true
+    end
+end
+
+class('Stopwatch').extends('Screen')
+function Stopwatch:init()
+    Stopwatch.super.init(self)
+    InitSounds()
+end
 
 local function StartTimer()
     playdate.setAutoLockDisabled(true)
@@ -99,7 +129,7 @@ local function Draw()
     DrawHelp()
 end
 
-local function Update()
+function Stopwatch:Update()
     if newLap then
         local lapDelta = (newLapS - timeStartS) * 1000 + (newLapMs - timeStartMs) + tempLapMs
         local lapTime = GetTimeString(GetTimeComponents(lapDelta))
@@ -128,23 +158,6 @@ local function Update()
     Draw()
 end
 
-local beepInst = nil
-local beepSeq = nil
-local function InitSounds()
-    local beepSnd = playdate.sound.synth.new(playdate.sound.kWaveSawtooth)
-    beepSnd:setADSR(0,1,1,0)
-    beepSeq = playdate.sound.sequence.new()
-    local track = playdate.sound.track.new()
-    beepInst = playdate.sound.instrument.new(beepSnd)
-    beepInst:setVolume(1.0)
-    track:addNote(1, "B7", 1)
-    track:addNote(2, "F7", 1)
-    track:setInstrument(beepInst)
-    beepSeq:setTempo(10)
-    beepSeq:addTrack(track)
-    --beepSeq:setLoops(1, 2, 1)
-end
-
 local function PlayStartBeep()
     beepInst:playNote(3951, 1.0,0.1)
 end
@@ -157,7 +170,7 @@ local function PlayResetBeep()
     beepSeq:play()
 end
 
-local function HandleAButton()
+function Stopwatch:HandleAButton()
     
     if watchState == kState.running then
         Log("A button - Lapping")
@@ -169,7 +182,7 @@ local function HandleAButton()
     end
 end
 
-local function HandleBButton()
+function Stopwatch:HandleBButton()
     if watchState == kState.running then
         Log("B button - stopping")
         PlayStopBeep()
@@ -179,26 +192,4 @@ local function HandleBButton()
         PlayResetBeep()
         ResetTimer()
     end
-end
-
-local function DoNothing()
-end
-
-local function HandleCrank(change, accelChange)
-end
-
-function StopwatchScreenBuilder()
-    InitSounds()
-    local screen = {
-        AButton = HandleAButton,
-        BButton = HandleBButton,
-        Down = DoNothing,
-        Up = DoNothing,
-        Left = DoNothing,
-        Right = DoNothing,
-        Crank = HandleCrank,
-        UpdateScreen = Update
-    }
-
-    return screen
 end
